@@ -1609,7 +1609,6 @@ body::before {
    ========================================================================== */
 .section--pricing {
   position: relative;
-  padding-top: 0;
 }
 
 .pricing__urgency {

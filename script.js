@@ -5,56 +5,6 @@
 (function () {
   'use strict';
 
-  /* ---------- Countdown to 2026-04-20 23:59:59 (São Paulo, BRT = UTC-3) ---------- */
-  const DEADLINE = new Date('2026-04-20T23:59:59-03:00').getTime();
-
-  const pad = (n) => String(n).padStart(2, '0');
-
-  const heroEl  = document.querySelector('[data-countdown-hero]');
-  const copyEl  = document.querySelector('[data-countdown-copy]');
-  const bigEl   = document.querySelector('[data-countdown-big]');
-  const finalEl = document.querySelector('[data-countdown-final]');
-  const dEl = document.querySelector('[data-cd-dd]');
-  const hEl = document.querySelector('[data-cd-hh]');
-  const mEl = document.querySelector('[data-cd-mm]');
-  const sEl = document.querySelector('[data-cd-ss]');
-  const panelEl = document.querySelector('[data-countdown-panel]');
-
-  let expiredPainted = false;
-
-  const paintExpired = () => {
-    if (expiredPainted) return;
-    expiredPainted = true;
-    if (heroEl) heroEl.parentElement.textContent = 'Lançamento encerrado — inscrições em preço regular';
-    if (copyEl) copyEl.innerHTML = 'A oferta de lançamento foi encerrada. Inscrições seguem abertas em <b>preço regular</b>.';
-    if (finalEl) finalEl.textContent = 'inscrições em preço regular';
-    [dEl, hEl, mEl, sEl].forEach(n => { if (n) n.textContent = '00'; });
-    if (panelEl) panelEl.classList.add('is-expired');
-  };
-
-  const tick = () => {
-    const now = Date.now();
-    let delta = DEADLINE - now;
-    if (delta <= 0) { paintExpired(); return; }
-
-    const dd = Math.floor(delta / 86400000); delta -= dd * 86400000;
-    const hh = Math.floor(delta / 3600000);  delta -= hh * 3600000;
-    const mm = Math.floor(delta / 60000);    delta -= mm * 60000;
-    const ss = Math.floor(delta / 1000);
-
-    if (heroEl)  heroEl.textContent  = `${pad(dd)}d ${pad(hh)}h ${pad(mm)}min`;
-    if (bigEl)   bigEl.textContent   = `${dd} dia${dd !== 1 ? 's' : ''} · ${pad(hh)}h · ${pad(mm)}min · ${pad(ss)}s`;
-    if (finalEl) finalEl.textContent = `${dd}d · ${pad(hh)}h · ${pad(mm)}min`;
-    if (dEl) dEl.textContent = pad(dd);
-    if (hEl) hEl.textContent = pad(hh);
-    if (mEl) mEl.textContent = pad(mm);
-    if (sEl) sEl.textContent = pad(ss);
-  };
-
-  tick();
-  setInterval(tick, 1000);
-
-
   /* ---------- Week progress tracker (12 weeks · 6 phases) ---------- */
   (function () {
     const progress = document.getElementById('progress');
