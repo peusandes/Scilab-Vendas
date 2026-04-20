@@ -136,7 +136,14 @@ body::before {
   display: inline-flex; align-items: center; gap: 12px;
   color: var(--ink);
 }
-.nav__logo { color: var(--ink); flex: none; }
+.nav__logo {
+  color: var(--ink);
+  flex: none;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  display: block;
+}
 .nav__wordmark {
   font-family: var(--serif);
   font-size: 22px;
