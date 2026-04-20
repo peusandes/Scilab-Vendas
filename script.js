@@ -112,7 +112,7 @@
       }
     });
   }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
-  document.querySelectorAll('.section, .weeks__item, .card, .community__card, .audience__card, .plan, .faq__item, .hero__specimen, .ai__demo, .final, .manifest').forEach((el) => {
+  document.querySelectorAll('.section, .weeks__item, .card, .community__card, .audience__card, .plan, .faq__item, .hero__specimen, .final, .manifest').forEach((el) => {
     el.classList.add('reveal');
     revealIo.observe(el);
   });
