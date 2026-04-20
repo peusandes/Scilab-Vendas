@@ -55,43 +55,44 @@
   setInterval(tick, 1000);
 
 
-  /* ---------- Module progress tracker ---------- */
+  /* ---------- Week progress tracker (12 weeks · 6 phases) ---------- */
   (function () {
     const progress = document.getElementById('progress');
     if (!progress) return;
+
+    const TOTAL_WEEKS = 12;
 
     const fill    = progress.querySelector('[data-progress-fill]');
     const phaseEl = progress.querySelector('[data-progress-phase]');
     const labelEl = progress.querySelector('[data-progress-label]');
     const numEl   = progress.querySelector('[data-progress-num]');
     const ticks   = progress.querySelectorAll('[data-progress-tick]');
-    const items   = document.querySelectorAll('.modules__item');
-    const total   = items.length;
+    const items   = document.querySelectorAll('.weeks__item');
 
-    const setModule = (el) => {
+    const setPhase = (el) => {
       if (!el) return;
-      const n = parseInt(el.dataset.module, 10);
+      const end = parseInt(el.dataset.end, 10);
       const phase = el.dataset.phase;
       const label = el.dataset.label;
 
-      if (fill) fill.style.width = (n / total * 100) + '%';
+      if (fill) fill.style.width = (end / TOTAL_WEEKS * 100) + '%';
       if (phaseEl) phaseEl.textContent = phase;
       if (labelEl) labelEl.innerHTML = label;
-      if (numEl) numEl.textContent = String(n).padStart(2, '0');
+      if (numEl) numEl.textContent = String(end).padStart(2, '0');
 
       ticks.forEach((t) => {
         const tn = parseInt(t.dataset.progressTick, 10);
-        t.classList.toggle('is-active', tn <= n);
+        t.classList.toggle('is-active', tn <= end);
       });
       items.forEach((it) => it.classList.toggle('is-active', it === el));
     };
 
-    setModule(items[items.length - 1]);
+    setPhase(items[items.length - 1]);
 
     items.forEach((it) => {
-      it.addEventListener('mouseenter', () => setModule(it));
-      it.addEventListener('focusin',    () => setModule(it));
-      it.addEventListener('click',      () => setModule(it));
+      it.addEventListener('mouseenter', () => setPhase(it));
+      it.addEventListener('focusin',    () => setPhase(it));
+      it.addEventListener('click',      () => setPhase(it));
     });
 
     const cardIo = new IntersectionObserver((entries) => {
@@ -101,7 +102,7 @@
           if (!best || e.intersectionRatio > best.intersectionRatio) best = e;
         }
       });
-      if (best) setModule(best.target);
+      if (best) setPhase(best.target);
     }, {
       threshold: [0.5, 0.75, 0.95],
       rootMargin: '-30% 0px -30% 0px'
@@ -117,16 +118,16 @@
           let i = 0;
           const step = () => {
             if (i < items.length) {
-              setModule(items[i]);
+              setPhase(items[i]);
               i++;
-              setTimeout(step, 240);
+              setTimeout(step, 280);
             }
           };
           setTimeout(step, 220);
         }
       });
     }, { threshold: 0.3 });
-    const section = document.querySelector('.section--modules');
+    const section = document.querySelector('.section--weeks');
     if (section) sectionIo.observe(section);
 
     /* Sticky pin detection */
@@ -161,7 +162,7 @@
       }
     });
   }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
-  document.querySelectorAll('.section, .modules__item, .card, .community__card, .audience__card, .plan, .faq__item, .hero__specimen, .ai__demo, .final').forEach((el) => {
+  document.querySelectorAll('.section, .weeks__item, .card, .community__card, .audience__card, .plan, .faq__item, .hero__specimen, .ai__demo, .final, .manifest').forEach((el) => {
     el.classList.add('reveal');
     revealIo.observe(el);
   });
