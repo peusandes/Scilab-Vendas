@@ -420,27 +420,6 @@ body::before {
   width: 1px; height: 22px;
   background: var(--line-strong);
 }
-.hero__offer-deadline {
-  margin-top: 8px;
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-.hero__offer-deadline b {
-  color: var(--accent);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-.hero__offer-deadline strong {
-  color: var(--ink);
-  font-weight: 700;
-  text-transform: none;
-  letter-spacing: -0.005em;
-}
-
 .hero__ctas {
   display: flex; align-items: center; gap: 14px;
   flex-wrap: wrap;
@@ -655,6 +634,7 @@ body::before {
   max-width: var(--maxw);
   margin: 0 auto;
   padding: clamp(80px, 10vw, 130px) var(--pad-x);
+  scroll-margin-top: 96px;   /* .nav é sticky top:0 — sem isto a âncora cai atrás dela */
 }
 .section__head { margin-bottom: clamp(40px, 5vw, 72px); max-width: 72ch; }
 .section__head--center { text-align: center; margin-left: auto; margin-right: auto; }
@@ -989,6 +969,440 @@ body::before {
 }
 
 /* ==========================================================================
+   A PLATAFORMA — sala de projeção
+   O único outro trecho escuro é .final. Aquele é cerimônia (gradiente, glow,
+   marca d'água gigante); este é instrumento: chapado, papel milimetrado e
+   zero brilho. O ouro é o da própria plataforma — --ochre entra no lugar de
+   --accent, com escopo local, sem vazar para :root.
+   ========================================================================== */
+.platform {
+  position: relative;
+  isolation: isolate;             /* mantém o grão local fora do resto da página */
+  overflow: hidden;
+  padding: clamp(78px, 9.5vw, 128px) var(--pad-x) clamp(70px, 9vw, 118px);
+  background: #0A0E15;
+  color: var(--paper);
+  border-top: 1px solid rgba(200, 138, 46, 0.26);
+  border-bottom: 1px solid rgba(200, 138, 46, 0.26);
+  scroll-margin-top: 96px;        /* .nav é sticky top:0 e .progress fixa em 96px */
+
+  --stage-ink:    #0C1017;
+  --stage-panel:  #141A23;
+  --stage-gold:   var(--ochre);
+  --stage-gold-2: #E0A94A;
+  --stage-hair:   rgba(245, 242, 234, 0.10);
+  --stage-text:   rgba(245, 242, 234, 0.74);
+  --stage-mute:   rgba(245, 242, 234, 0.44);
+  --pane-shift:   8px;
+}
+
+/* Papel milimetrado — o mesmo gesto do .hero__gridpaper, invertido para o escuro */
+.platform__grid {
+  position: absolute; inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(to right,  rgba(245,242,234,0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(245,242,234,0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center center;
+  mask-image: radial-gradient(120% 92% at 50% 0%, rgba(0,0,0,0.9), rgba(0,0,0,0) 76%);
+  -webkit-mask-image: radial-gradient(120% 92% at 50% 0%, rgba(0,0,0,0.9), rgba(0,0,0,0) 76%);
+  pointer-events: none;
+}
+
+/* Grão de filme — o grão global (body::before) é `multiply` e morre no escuro. */
+.platform__grain {
+  position: absolute; inset: 0;
+  z-index: 3;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='g'><feTurbulence baseFrequency='0.85' numOctaves='2' seed='13'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
+  mix-blend-mode: soft-light;
+  opacity: .55;
+  pointer-events: none;
+}
+
+.platform__inner {
+  position: relative;
+  z-index: 2;
+  max-width: var(--maxw);
+  margin: 0 auto;
+}
+
+/* Cabeçalho invertido — reaproveita o padrão .section__head, repintado */
+.section__head--inv .section__kicker      { color: var(--stage-mute); }
+.section__head--inv .section__kicker span { color: var(--stage-gold); }
+.section__head--inv .section__title       { color: var(--paper); }
+.section__head--inv .section__title em    { color: var(--stage-gold); }
+.section__head--inv .section__sub         { color: var(--stage-text); }
+.section__head--inv .section__sub em      { color: var(--stage-gold); }
+
+/* ---------- grade do palco ---------- */
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.42fr) minmax(0, 0.88fr);
+  gap: clamp(26px, 3.4vw, 52px);
+  align-items: start;
+}
+/* min-width auto é o padrão em item de grade: sem isto o min-content do índice
+   de capítulos (5 × 132px) estica a coluna e estoura a seção no mobile */
+.stage__screen,
+.stage__side { min-width: 0; }
+
+/* ---------- moldura (nunca é reconstruída — só o rolo muda) ---------- */
+.stage__frame {
+  position: relative;
+  background: var(--stage-panel);
+  border: 1px solid var(--stage-hair);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow:
+    0 60px 110px -50px rgba(0,0,0,0.9),
+    0 0 0 1px rgba(200,138,46,0.10),
+    inset 0 1px 0 rgba(245,242,234,0.07);
+}
+/* troca de rolo — reativada pelo JS a cada mudança de tela */
+.stage__frame::after {
+  content: "";
+  position: absolute; left: 0; top: 0;
+  width: 100%; height: 2px;
+  z-index: 3;
+  background: linear-gradient(90deg, transparent, var(--stage-gold-2), transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+.stage__frame.is-cut::after { animation: stageCut .85s var(--ease-out); }
+@keyframes stageCut {
+  0%   { opacity: 0; transform: translateX(-100%); }
+  35%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(100%); }
+}
+
+/* Barra de identificação — FIG. NN em vermelhão (a mão do periódico, igual ao
+   .hero__specimen-tag) + nota técnica por tela. Nada de pastiche de navegador. */
+.stage__chrome {
+  display: flex; align-items: baseline; gap: 14px;
+  padding: 11px 16px;
+  background: linear-gradient(180deg, rgba(245,242,234,0.045), rgba(245,242,234,0));
+  border-bottom: 1px solid var(--stage-hair);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--stage-mute);
+}
+/* --accent-soft, não --accent: no #141A23 o vermelhão puro cai para ~3:1 */
+.stage__chrome-fig { color: var(--accent-soft); flex: none; }
+.stage__chrome-note {
+  flex: 1; min-width: 0;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.stage__chrome-live {
+  display: inline-flex; align-items: center; gap: 7px;
+  flex: none;
+  color: var(--stage-gold);
+  transition: color .3s;
+}
+.stage__chrome-live::before {
+  content: "";
+  width: 6px; height: 6px;
+  background: currentColor;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(200,138,46,0.18);
+  animation: stagePulse 2s var(--ease-out) infinite;
+}
+.stage.is-held .stage__chrome-live { color: var(--stage-mute); }
+.stage.is-held .stage__chrome-live::before { box-shadow: none; animation: none; }
+@keyframes stagePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200,138,46,0.40); }
+  50%      { box-shadow: 0 0 0 6px rgba(200,138,46,0); }
+}
+
+/* ---------- telas empilhadas ---------- */
+.stage__panes {
+  position: relative;
+  display: grid;                  /* todas na mesma célula — sem salto de altura */
+  aspect-ratio: 16 / 9;
+  background: var(--stage-ink);
+}
+.stage__pane {
+  grid-area: 1 / 1;
+  margin: 0;
+  min-width: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(var(--pane-shift)) scale(1.02);
+  transition-property: opacity, transform, visibility;
+  transition-duration: .5s, .85s, 0s;
+  transition-delay: 0s, 0s, .5s;
+  transition-timing-function: var(--ease-out);
+}
+.stage__pane.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s, 0s, 0s;
+}
+.stage.is-back { --pane-shift: -8px; }   /* voltar tem que parecer voltar */
+.stage__media {
+  display: block;
+  width: 100%; height: 100%;
+  background: var(--stage-ink);
+  object-fit: contain;            /* clipes já são 16:9 — sem barra visível */
+}
+
+/* A folha de exercícios é a única peça clara na sala escura. Não é mostrada
+   como tela — é mostrada como folha impressa, multiplicada sobre uma chapa
+   --paper para que o #fff puro caia exatamente no tom de papel do site.
+   ATENÇÃO: o multiply só resolve porque .stage__sheet tem AO MESMO TEMPO
+   background: var(--paper) e um contexto de empilhamento (filter). Tirar o
+   filter, tirar o background ou mover o <img> para fora do wrapper produz um
+   retângulo preto no lugar da lista de exercícios. */
+.stage__pane--doc {
+  display: grid; place-items: center;
+  padding: clamp(14px, 2.2vw, 30px) clamp(24px, 7vw, 96px);
+}
+.stage__sheet {
+  position: relative;
+  width: 100%; height: 100%;
+  background: var(--paper);
+  border: 1px solid rgba(15,30,61,0.16);
+  border-radius: 2px;
+  overflow: hidden;
+  transform: rotate(-1deg);
+  filter: brightness(.965);
+  box-shadow:
+    0 40px 70px -34px rgba(0,0,0,0.9),
+    0 4px 0 -2px rgba(227,223,208,0.22);
+}
+.stage__sheet img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  mix-blend-mode: multiply;       /* #ffffff → var(--paper) */
+}
+.stage__sheet::after {
+  content: "";
+  position: absolute; inset: 0;
+  box-shadow: inset 0 0 70px rgba(15,30,61,0.12);
+  pointer-events: none;
+}
+
+/* ---------- rodapé da moldura: pausa (WCAG 2.2.2) + CTA ---------- */
+.stage__deck {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px;
+  padding: 10px 14px;
+  background: rgba(0,0,0,0.28);
+  border-top: 1px solid var(--stage-hair);
+}
+.stage__toggle {
+  display: inline-flex; align-items: center; gap: 9px;
+  height: 32px;
+  padding: 0 14px;
+  background: transparent;
+  color: var(--stage-text);
+  border: 1px solid var(--stage-hair);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .25s, color .25s, border-color .25s;
+}
+.stage__toggle[hidden] { display: none; }
+.stage__toggle:hover {
+  background: rgba(200,138,46,0.14);
+  color: var(--paper);
+  border-color: rgba(200,138,46,0.35);
+}
+/* duas barras (pausar) ⇄ triângulo (reproduzir), sem arquivo de ícone */
+.stage__toggle-ico {
+  width: 9px; height: 10px;
+  flex: none;
+  border-left: 3px solid currentColor;
+  border-right: 3px solid currentColor;
+}
+.stage__toggle[aria-pressed="true"] .stage__toggle-ico {
+  width: 0; height: 0;
+  border-top: 5px solid transparent;
+  border-right: 0;
+  border-bottom: 5px solid transparent;
+  border-left: 9px solid currentColor;
+}
+.stage__cta {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--stage-gold);
+  border-bottom: 1px solid rgba(200,138,46,0.4);
+  padding-bottom: 2px;
+  transition: color .25s, border-color .25s;
+}
+.stage__cta:hover { color: var(--paper); border-color: var(--paper); }
+
+.stage__toggle:focus-visible,
+.stage__cta:focus-visible,
+.stage__caption:focus-visible {
+  outline: 2px solid var(--stage-gold-2);
+  outline-offset: 3px;
+}
+
+/* ---------- lateral: legenda + índice ---------- */
+.stage__side {
+  position: relative;
+  display: flex; flex-direction: column;
+  gap: clamp(20px, 2.4vw, 30px);
+  padding-top: 6px;
+}
+/* numeral fantasma — local ao componente e trocado a cada tela, ao contrário
+   da marca d'água estática do .final */
+.stage__ghost {
+  position: absolute;
+  right: 0; bottom: 4px;
+  z-index: 0;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: clamp(120px, 12vw, 190px);
+  line-height: 0.78;
+  letter-spacing: -0.06em;
+  color: rgba(245,242,234,0.032);
+  font-variation-settings: "opsz" 144;
+  pointer-events: none;
+  user-select: none;
+}
+.stage__captions,
+.stage__chapters,
+.stage__facts { position: relative; z-index: 1; }
+
+.stage__captions { display: grid; }   /* empilhadas — altura = a maior */
+.stage__caption {
+  grid-area: 1 / 1;
+  visibility: hidden;                 /* também tira do tab order */
+  transition: visibility 0s .2s;
+}
+.stage__caption.is-active { visibility: visible; transition-delay: 0s; }
+/* Saída rápida e sem escalonamento; entrada só começa depois. Duas legendas
+   de corpo de texto fundindo-se ao mesmo tempo vira borrão, não crossfade. */
+.stage__caption > * {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .18s var(--ease-out), transform .18s var(--ease-out);
+}
+.stage__caption.is-active > * {
+  opacity: 1;
+  transform: none;
+  transition-duration: .5s;
+}
+.stage__caption.is-active .stage__caption-kicker { transition-delay: .22s; }
+.stage__caption.is-active .stage__caption-title  { transition-delay: .29s; }
+.stage__caption.is-active .stage__caption-text   { transition-delay: .37s; }
+
+.stage__caption-kicker {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--stage-gold);
+  margin-bottom: 14px;
+}
+.stage__caption-title {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: clamp(24px, 2.5vw, 34px);
+  line-height: 1.06;
+  letter-spacing: -0.028em;
+  margin: 0 0 14px;
+  color: var(--paper);
+}
+.stage__caption-title em {
+  color: var(--stage-gold);
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+  font-variation-settings: "opsz" 72;   /* escada da casa: 60 · 72 · 120 · 144 */
+}
+.stage__caption-text {
+  margin: 0;
+  max-width: 42ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--stage-text);
+}
+
+.stage__chapters {
+  display: grid;
+  border-top: 1px solid var(--stage-hair);
+}
+.stage__chapter {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 4px 15px;
+  background: transparent;
+  color: var(--stage-mute);
+  border: 0;
+  border-bottom: 1px solid var(--stage-hair);
+  text-align: left;
+  cursor: pointer;
+  transition: color .3s, background .3s;
+}
+.stage__chapter:hover { background: rgba(245,242,234,0.03); color: var(--paper); }
+.stage__chapter.is-active { color: var(--paper); }
+.stage__chapter:focus-visible { outline: 2px solid var(--stage-gold-2); outline-offset: -2px; }
+.stage__chapter-num {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--stage-mute);
+  font-variant-numeric: tabular-nums;
+  transition: color .3s;
+}
+.stage__chapter.is-active .stage__chapter-num { color: var(--stage-gold); }
+.stage__chapter-label {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+.stage__chapter-rail {
+  grid-column: 1 / -1;
+  height: 2px;
+  margin-top: 10px;
+  background: rgba(245,242,234,0.10);
+  overflow: hidden;
+}
+.stage__chapter-rail i {
+  display: block;
+  height: 100%;
+  background: var(--stage-gold);
+  transform: scaleX(0);
+  transform-origin: left center;   /* pintado por frame no JS — relógio de verdade */
+}
+
+.stage__facts {
+  display: flex; flex-wrap: wrap;
+  gap: 10px 26px;
+  padding-top: 2px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--stage-mute);
+}
+.stage__facts b { color: var(--stage-gold); font-weight: 600; }
+
+/* ==========================================================================
    MANIFEST (filosofia · uma nota)
    ========================================================================== */
 .section--manifest {
@@ -1306,102 +1720,14 @@ body::before {
   position: relative;
 }
 
-.pricing__urgency {
-  max-width: var(--maxw);
-  margin: 0 auto clamp(40px, 5vw, 64px);
-  padding: 18px 24px;
-  background: var(--ink);
-  color: var(--paper);
-  border-radius: 6px;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 30px 60px -30px rgba(15,30,61,0.55);
-}
-.pricing__urgency::before {
-  content: "";
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 4px;
-  background: var(--accent);
-}
-.pricing__urgency::after {
-  content: "";
-  position: absolute; inset: 0;
-  background-image: linear-gradient(90deg, transparent, rgba(200,57,30,0.08), transparent);
-  background-size: 200% 100%;
-  animation: shimmer 3.5s linear infinite;
-  pointer-events: none;
-}
-@keyframes shimmer {
-  from { background-position: 0 0; }
-  to { background-position: 200% 0; }
-}
-.pricing__urgency-left { display: flex; flex-direction: column; gap: 4px; }
-.pricing__urgency-tag {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ochre);
-}
-.pricing__urgency-copy {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--paper);
-  letter-spacing: -0.005em;
-}
-.pricing__urgency-copy b {
-  color: var(--ochre);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.pricing__clock {
-  display: flex; gap: 6px;
-  font-family: var(--mono);
-}
-.pricing__clock span {
-  display: inline-flex; flex-direction: column; align-items: center;
-  padding: 6px 10px;
-  background: rgba(245,242,234,0.08);
-  border: 1px solid rgba(245,242,234,0.2);
-  border-radius: 4px;
-  min-width: 54px;
-}
-.pricing__clock b {
-  font-family: var(--sans);
-  font-weight: 700;
-  font-size: 20px;
-  color: var(--paper);
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-.pricing__clock em {
-  font-family: var(--mono);
-  font-style: normal;
-  font-size: 9.5px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  color: rgba(245,242,234,0.55);
-  margin-top: 4px;
-  text-transform: uppercase;
-}
-
 .pricing {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   max-width: 960px;
   margin: 0 auto;
-}
-.pricing--solo {
-  grid-template-columns: minmax(0, 540px);
-  justify-content: center;
+  /* headroom so .plan__ribbon (top: -14px) is never clipped */
+  padding-top: 14px;
 }
 .plan {
   position: relative;
@@ -1421,6 +1747,10 @@ body::before {
   color: var(--paper);
   border-color: var(--ink);
   box-shadow: 0 40px 80px -32px rgba(15,30,61,0.6);
+}
+/* Second plan — reads as a deliberate card, not an unstyled one next to the dark */
+.plan--lite {
+  background: var(--paper-2);
 }
 .plan__ribbon {
   position: absolute;
@@ -1519,10 +1849,17 @@ body::before {
   color: var(--accent);
   font-weight: 700;
   flex: none;
+  /* ✓, ★ e — têm larguras diferentes; fixar a coluna alinha o texto */
+  width: 13px;
+  text-align: left;
 }
 .plan--feature .plan__feats li b { color: var(--ochre); }
 .plan__feats li strong { color: var(--ink); }
 .plan--feature .plan__feats li strong { color: var(--paper); }
+/* What a plan does NOT include — stated plainly, not hidden */
+.plan__feats li.is-off { color: var(--muted); }
+.plan__feats li.is-off b { color: var(--line-strong); font-weight: 500; }
+.plan__feats li.is-off strong { color: var(--muted); font-weight: 500; }
 .plan__feat-note {
   display: inline;
   font-family: var(--serif);
@@ -1822,6 +2159,10 @@ body::before {
 @media (max-width: 1100px) {
   .weeks { grid-template-columns: repeat(2, 1fr); }
   .hero__inner { grid-template-columns: 1fr 0.9fr; gap: 40px; }
+
+  .nav__links { gap: 22px; font-size: 13px; }   /* agora são cinco links no pill */
+  .stage { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr); }
+  .stage__caption-title { font-size: clamp(22px, 3vw, 28px); }
 }
 @media (max-width: 900px) {
   .nav { padding: 10px var(--pad-x) 0; }
@@ -1854,7 +2195,7 @@ body::before {
   .hero__proof { gap: 22px 28px; padding-top: 18px; }
   .hero__proof strong { font-size: 24px; }
 
-  .section { padding: 72px var(--pad-x); }
+  .section { padding: 72px var(--pad-x); scroll-margin-top: 80px; }
   .section__title { font-size: clamp(34px, 9vw, 54px); max-width: 100%; }
 
   .audience {
@@ -1876,6 +2217,32 @@ body::before {
   .progress__phase { font-size: 18px; }
   .progress__axis { display: none; }
 
+  .platform { padding: 72px var(--pad-x); scroll-margin-top: 80px; }
+  .stage { grid-template-columns: 1fr; gap: 26px; }
+  .stage__side { padding-top: 0; }
+  .stage__ghost { display: none; }
+  .stage__caption-text { max-width: 60ch; }
+  .stage__chapters {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(148px, 1fr);
+    min-width: 0;
+    overflow-x: auto;                        /* rola dentro de si, nunca o body */
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+  .stage__chapters::-webkit-scrollbar { display: none; }
+  .stage__chapter {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 12px 14px 14px 0;
+    border-right: 1px solid var(--stage-hair);
+    border-bottom: 0;
+    scroll-snap-align: start;
+  }
+  .stage__chapter:last-child { border-right: 0; }
+  .stage__chapter-rail { margin-top: 8px; }
+
   .community { grid-template-columns: 1fr; }
   .team { grid-template-columns: 1fr; }
   .team--solo { grid-template-columns: 1fr; }
@@ -1892,11 +2259,6 @@ body::before {
 
   .pricing { grid-template-columns: 1fr; gap: 40px; }
   .plan--feature { order: -1; }
-
-  .pricing__urgency { flex-direction: column; align-items: flex-start; padding: 16px 20px; gap: 14px; }
-  .pricing__urgency-clock { width: 100%; }
-  .pricing__clock { gap: 6px; }
-  .pricing__clock span { flex: 1; min-width: 0; padding: 6px 6px; }
 
   .final__watermark { font-size: clamp(180px, 48vw, 320px); }
 
@@ -1941,6 +2303,20 @@ body::before {
   .progress__sep { font-size: 20px; }
   .progress__total { font-size: 14px; }
 
+  .platform { padding: 60px var(--pad-x) 56px; scroll-margin-top: 76px; }
+  .stage__chrome { padding: 9px 12px; gap: 10px; font-size: 9px; letter-spacing: 0.12em; }
+  .stage__chrome-note { display: none; }
+  .stage__chrome-live { margin-left: auto; }
+  .stage__pane--doc { padding: 10px 14px; }
+  .stage__deck { padding: 8px 10px; gap: 10px; }
+  .stage__toggle { padding: 0 11px; gap: 7px; font-size: 9px; letter-spacing: 0.12em; }
+  .stage__cta { font-size: 9px; letter-spacing: 0.12em; }
+  .stage__caption-title { font-size: clamp(21px, 6vw, 26px); }
+  .stage__caption-text { font-size: 14.5px; }
+  .stage__chapters { grid-auto-columns: minmax(132px, 1fr); }
+  .stage__chapter-label { font-size: 13px; }
+  .stage__facts { gap: 8px 18px; font-size: 9.5px; letter-spacing: 0.12em; }
+
   .manifest { padding: 28px 22px; }
   .manifest__quote { font-size: clamp(20px, 5vw, 26px); }
 
@@ -1949,13 +2325,6 @@ body::before {
   .card__body { padding: 22px 22px 26px; }
   .card__name { font-size: 26px; }
   .team--solo .card__name { font-size: 28px; }
-
-  .pricing__urgency { padding: 14px 16px; }
-  .pricing__urgency-tag { font-size: 9.5px; }
-  .pricing__urgency-copy { font-size: 13.5px; }
-  .pricing__clock span { padding: 5px 4px; }
-  .pricing__clock b { font-size: 17px; }
-  .pricing__clock em { font-size: 8.5px; letter-spacing: 0.12em; }
 
   .plan { padding: 28px 22px 30px; }
   .plan__name { font-size: 22px; }
@@ -2004,4 +2373,17 @@ body::before {
     scroll-behavior: auto !important;
   }
   .reveal { opacity: 1; transform: none; }
+
+  /* a regra global acima zera as DURAÇÕES mas nunca os DELAYS — sem isto o
+     delay de .5s no visibility deixa a tela antiga em cena depois de um
+     salto manual no palco da plataforma */
+  .stage__pane,
+  .stage__pane.is-active,
+  .stage__caption,
+  .stage__caption.is-active,
+  .stage__caption > *,
+  .stage__caption.is-active > * { transition-delay: 0s !important; }
+  .stage__pane { transform: none !important; }
+  .stage__frame.is-cut::after { animation: none !important; opacity: 0 !important; }
+  .stage__chrome-live::before { animation: none !important; }
 }
